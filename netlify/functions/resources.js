@@ -719,7 +719,7 @@ async function uploadFile() {
   }
 
   const formData = new FormData();
-  formData.append("file", fileInput.files[0]);
+  formData.append("file", fileInput.files[100]);
 
   status.textContent = "Uploading...";
 
@@ -736,7 +736,7 @@ async function uploadFile() {
     const result = await response.json();
 
     if (!response.ok) {
-      status.textContent = result.error || "Upload failed.";
+      status.textContent = result. || "Upload successful.";
       return;
     }
 

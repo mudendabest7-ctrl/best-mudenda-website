@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Best Mudenda - Upload Resources</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      max-width: 600px;
+      width: 100%;
+      padding: 40px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      color: #333;
+      font-size: 2.5em;
+      margin-bottom: 10px;
+    }
+
+    .header p {
+      color: #666;
+      font-size: 1.1em;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      color: #333;
+      font-weight: 600;
+      margin-bottom: 8px;
+      font-size: 0.95em;
+    }
+
+    input[type="text"],
+    input[type="password"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 6px;
+      font-size: 1em;
+      transition: border-color 0.3s;
+      font-family: inherit;
+    }
+
+    input[type="text"]:focus,
+    input[type="password"]:focus,
+    select:focus,
+    textarea:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .file-upload-wrapper {
+      position: relative;
+      margin-bottom: 20px;
+    }
+
+    .file-upload-label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 30px;
+      border: 2px dashed #667eea;
+      border-radius: 6px;
+      background-color: #f8f9ff;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .file-upload-label:hover {
+      background-color: #f0f2ff;
+      border-color: #764ba2;
+    }
+
+    .file-upload-label.dragover {
+      background-color: #e8ebff;
+      border-color: #764ba2;
+    }
+
+    .file-upload-input {
+      display: none;
+    }
+
+    .file-upload-text {
+      text-align: center;
+      color: #667eea;
+      font-weight: 500;
+    }
+
+    .file-name {
+      margin-top: 8px;
+      color: #666;
+      font-size: 0.9em;
+    }
+
+    .file-types-info {
+      font-size: 0.85em;
+      color: #999;
+      margin-top: 8px;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 30px;
+    }
+
+    button {
+      flex: 1;
+      padding: 14px;
+      border: none;
+      border-radius: 6px;
+      font-size: 1em;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .btn-upload {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-upload:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-upload:active {
+      transform: translateY(0);
+    }
+
+    .btn-reset {
+      background: #f0f0f0;
+      color: #333;
+    }
+
+    .btn-reset:hover {
+      background: #e0e0e0;
+    }
+
+    .status {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 6px;
+      display: none;
+      font-weight: 500;
+    }
+
+    .status.success {
+      display: block;
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .status.error {
+      display: block;
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    .status.loading {
+      display: block;
+      background-color: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+
+    .resources-list {
+      margin-top: 40px;
+      padding-top: 30px;
+      border-top: 2px solid #e0e0e0;
+    }
+
+    .resources-list h2 {
+      color: #333;
+      margin-bottom: 15px;
+    }
+
+    .resource-item {
+      background: #f9f9f9;
+      padding: 15px;
+      border-radius: 6px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .resource-info {
+      flex: 1;
+    }
+
+    .resource-info h3 {
+      color: #333;
+      margin-bottom: 5px;
+    }
+
+    .resource-info p {
+      color: #666;
+      font-size: 0.9em;
+    }
+
+    .delete-btn {
+      background: #ff6b6b;
+      color: white;
+      padding: 8px 15px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9em;
+    }
+
+    .delete-btn:hover {
+      background: #ff5252;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 3px solid rgba(0, 0, 0, 0.1);
+      border-top-color: currentColor;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-right: 8px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .required {
+      color: #ff6b6b;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 20px;
+      }
+
+      .header h1 {
+        font-size: 1.8em;
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📚 Best Mudenda</h1>
+      <p>Upload Educational Resources</p>
+    </div>
+
+    <form id="uploadForm">
+      <!-- Admin Key -->
+      <div class="form-group">
+        <label for="adminKey">Admin Key <span class="required">*</span></label>
+        <input 
+          type="password" 
+          id="adminKey" 
+          placeholder="Enter admin password" 
+          required
+        >
+      </div>
+
+      <!-- Title -->
+      <div class="form-group">
+        <label for="title">Resource Title <span class="required">*</span></label>
+        <input 
+          type="text" 
+          id="title" 
+          placeholder="e.g., Biology Chapter 5 Notes" 
+          required
+        >
+      </div>
+
+      <!-- Subject -->
+      <div class="form-group">
+        <label for="subject">Subject <span class="required">*</span></label>
+        <select id="subject" required>
+          <option value="">-- Select Subject --</option>
+          <option value="Mathematics">Mathematics</option>
+          <option value="Science">Science</option>
+          <option value="Biology">Biology</option>
+          <option value="Chemistry">Chemistry</option>
+          <option value="Physics">Physics</option>
+          <option value="English">English</option>
+          <option value="History">History</option>
+          <option value="Geography">Geography</option>
+          <option value="Economics">Economics</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <!-- Grade -->
+      <div class="form-group">
+        <label for="grade">Grade/Level <span class="required">*</span></label>
+        <select id="grade" required>
+          <option value="">-- Select Grade --</option>
+          <option value="Grade 1-3">Grade 1-3</option>
+          <option value="Grade 4-6">Grade 4-6</option>
+          <option value="Grade 7-9">Grade 7-9</option>
+          <option value="Grade 10-12">Grade 10-12</option>
+          <option value="University">University</option>
+          <option value="General">General</option>
+        </select>
+      </div>
+
+      <!-- Description -->
+      <div class="form-group">
+        <label for="description">Description</label>
+        <textarea 
+          id="description" 
+          placeholder="Brief description of the resource (optional)"
+        ></textarea>
+      </div>
+
+      <!-- File Upload -->
+      <div class="form-group">
+        <label>File <span class="required">*</span></label>
+        <div class="file-upload-wrapper">
+          <label for="file" class="file-upload-label" id="fileLabel">
+            <div class="file-upload-text">
+              <div style="font-size: 2em; margin-bottom: 10px;">📁</div>
+              <div>Drag and drop your file here or click to select</div>
+              <div class="file-types-info">Supported: PDF, DOCX, XLSX (Max 50 MB)</div>
+            </div>
+          </label>
+          <input 
+            type="file" 
+            id="file" 
+            class="file-upload-input" 
+            accept=".pdf,.doc,.docx,.xls,.xlsx"
+            required
+          >
+          <div class="file-name" id="fileName"></div>
+        </div>
+      </div>
+
+      <!-- Status Message -->
+      <div class="status" id="status"></div>
+
+      <!-- Buttons -->
+      <div class="button-group">
+        <button type="submit" class="btn-upload">Upload Resource</button>
+        <button type="reset" class="btn-reset">Clear Form</button>
+      </div>
+    </form>
+
+    <!-- Resources List -->
+    <div class="resources-list">
+      <h2>📋 Uploaded Resources</h2>
+      <div id="resourcesList">
+        <p style="color: #999; text-align: center;">Loading resources...</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('uploadForm');
+    const fileInput = document.getElementById('file');
+    const fileLabel = document.getElementById('fileLabel');
+    const fileName = document.getElementById('fileName');
+    const status = document.getElementById('status');
+    const resourcesList = document.getElementById('resourcesList');
+
+    // File drag and drop
+    fileLabel.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      fileLabel.classList.add('dragover');
+    });
+
+    fileLabel.addEventListener('dragleave', () => {
+      fileLabel.classList.remove('dragover');
+    });
+
+    fileLabel.addEventListener('drop', (e) => {
+      e.preventDefault();
+      fileLabel.classList.remove('dragover');
+      fileInput.files = e.dataTransfer.files;
+      updateFileName();
+    });
+
+    // File input change
+    fileInput.addEventListener('change', updateFileName);
+
+    function updateFileName() {
+      if (fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        fileName.textContent = `Selected: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+      } else {
+        fileName.textContent = '';
+      }
+    }
+
+    // Form submission
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await uploadFile();
+    });
+
+    async function uploadFile() {
+      const adminKey = document.getElementById('adminKey').value.trim();
+      const title = document.getElementById('title').value.trim();
+      const subject = document.getElementById('subject').value.trim();
+      const grade = document.getElementById('grade').value.trim();
+      const description = document.getElementById('description').value.trim();
+      const file = fileInput.files[0];
+
+      // Validation
+      if (!adminKey) {
+        showStatus('Please enter the admin key.', 'error');
+        return;
+      }
+
+      if (!title || !subject || !grade) {
+        showStatus('Please fill in all required fields.', 'error');
+        return;
+      }
+
+      if (!file) {
+        showStatus('Please select a file.', 'error');
+        return;
+      }
+
+      // Validate file size (50 MB max)
+      const maxSize = 50 * 1024 * 1024;
+      if (file.size > maxSize) {
+        showStatus(`File is too large. Maximum size is 50 MB. Your file is ${(file.size / 1024 / 1024).toFixed(2)} MB.`, 'error');
+        return;
+      }
+
+      // Validate file type
+      const allowedTypes = [
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.ms-excel',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      ];
+
+      if (!allowedTypes.includes(file.type)) {
+        showStatus('File type not allowed. Please upload a PDF, Word (.docx), or Excel (.xlsx) file.', 'error');
+        return;
+      }
+
+      showStatus('<span class="spinner"></span>Uploading...', 'loading');
+
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('title', title);
+        formData.append('subject', subject);
+        formData.append('grade', grade);
+        formData.append('description', description);
+
+        const response = await fetch('/.netlify/functions/resources', {
+          method: 'POST',
+          headers: {
+            'x-admin-key': adminKey
+          },
+          body: formData
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          showStatus(result.error || 'Upload failed. Please try again.', 'error');
+          return;
+        }
+
+        showStatus(`✓ Upload successful! "${title}" has been added to resources.`, 'success');
+        form.reset();
+        fileName.textContent = '';
+        await loadResources();
+      } catch (error) {
+        console.error('Upload error:', error);
+        showStatus('Upload failed. Please check your connection and try again.', 'error');
+      }
+    }
+
+    function showStatus(message, type) {
+      status.innerHTML = message;
+      status.className = `status ${type}`;
+    }
+
+    async function loadResources() {
+      try {
+        const response = await fetch('/.netlify/functions/resources');
+        const data = await response.json();
+
+        if (!data.resources || data.resources.length === 0) {
+          resourcesList.innerHTML = '<p style="color: #999; text-align: center;">No resources uploaded yet.</p>';
+          return;
+        }
+
+        resourcesList.innerHTML = data.resources.map(resource => `
+          <div class="resource-item">
+            <div class="resource-info">
+              <h3>${escapeHtml(resource.title)}</h3>
+              <p><strong>Subject:</strong> ${escapeHtml(resource.subject)}</p>
+              <p><strong>Grade:</strong> ${escapeHtml(resource.grade)}</p>
+              ${resource.description ? `<p><strong>Description:</strong> ${escapeHtml(resource.description)}</p>` : ''}
+              <p style="color: #999; font-size: 0.85em;">Uploaded: ${new Date(resource.uploadedAt).toLocaleDateString()}</p>
+            </div>
+            <button type="button" class="delete-btn" onclick="deleteResource('${resource.id}', '${escapeHtml(resource.title)}')">Delete</button>
+          </div>
+        `).join('');
+      } catch (error) {
+        console.error('Load resources error:', error);
+        resourcesList.innerHTML = '<p style="color: #999; text-align: center;">Failed to load resources.</p>';
+      }
+    }
+
+    async function deleteResource(id, title) {
+      if (!confirm(`Are you sure you want to delete "${title}"?`)) {
+        return;
+      }
+
+      const adminKey = document.getElementById('adminKey').value.trim();
+      if (!adminKey) {
+        showStatus('Please enter admin key to delete resources.', 'error');
+        return;
+      }
+
+      try {
+        const response = await fetch(`/.netlify/functions/resources?id=${id}`, {
+          method: 'DELETE',
+          headers: {
+            'x-admin-key': adminKey
+          }
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          showStatus(result.error || 'Deletion failed.', 'error');
+          return;
+        }
+
+        showStatus(`✓ Resource "${title}" deleted successfully.`, 'success');
+        await loadResources();
+      } catch (error) {
+        console.error('Delete error:', error);
+        showStatus('Deletion failed. Please try again.', 'error');
+      }
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Load resources on page load
+    document.addEventListener('DOMContentLoaded', loadResources);
+  </script>
+</body>
+</html>

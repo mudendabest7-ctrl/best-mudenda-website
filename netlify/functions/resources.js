@@ -16,6 +16,257 @@ const ALLOWED_FILE_TYPES = [
   "image/jpeg",
   "image/jpg"
 ];
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Best Mudenda Resources</title>
+
+<style>
+body{
+  font-family:Arial;
+  max-width:900px;
+  margin:auto;
+  padding:20px;
+  background:#f5f7fb
+}
+
+.card{
+  background:#fff;
+  padding:20px;
+  margin:15px 0;
+  border-radius:14px
+}
+
+button{
+  padding:12px 18px;
+  border:0;
+  border-radius:8px;
+  cursor:pointer
+}
+
+input,select{
+  width:100%;
+  padding:11px;
+  margin:7px 0 12px;
+  box-sizing:border-box
+}
+
+.hidden{
+  display:none
+}
+
+.resource{
+  display:flex;
+  justify-content:space-between;
+  border-top:1px solid #eee;
+  padding:14px 0
+}
+
+.resource a{
+  padding:9px 12px;
+  background:#172033;
+  color:white;
+  text-decoration:none;
+  border-radius:7px
+}
+</style>
+</head>
+
+<body>
+
+<h1>Best Mudenda Teaching Resources</h1>
+
+<div class="card">
+
+<h2>Admin Upload</h2>
+
+<button id="addBtn">Add Resource</button>
+
+<form id="uploadForm" class="hidden">
+
+<input
+id="title"
+required
+placeholder="Resource title"
+>
+
+<select id="category">
+<option>Mathematics</option>
+<option>Computer Studies</option>
+<option>ICT</option>
+<option>Lesson Plans</option>
+<option>Schemes of Work</option>
+<option>Other</option>
+</select>
+
+<input
+id="file"
+type="file"
+accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt"
+required
+>
+
+<button>Upload Resource</button>
+
+<p id="status"></p>
+
+</form>
+
+</div>
+
+<div class="card">
+
+<h2>Available Resources</h2>
+
+<div id="resources">
+Loading...
+</div>
+
+</div>
+
+<script>
+
+const ADMIN_TOKEN="CHANGE_THIS_ADMIN_TOKEN";
+
+const form=document.querySelector('#uploadForm');
+
+document.querySelector('#addBtn').onclick=()=>{
+
+form.classList.toggle('hidden');
+
+if(!form.classList.contains('hidden')){
+document.querySelector('#file').click();
+}
+
+};
+
+async function load(){
+
+let b=document.querySelector('#resources');
+
+try{
+
+let r=await fetch('/.netlify/functions/resources');
+
+let d=await r.json();
+
+b.innerHTML=d.resources?.length
+
+?d.resources.map(x=>`
+
+<div class="resource">
+
+<div>
+
+<b>${esc(x.title)}</b>
+
+<br>
+
+<small>
+${esc(x.category)} • ${esc(x.name)}
+</small>
+
+</div>
+
+<a href="${x.url}" target="_blank">
+Download
+</a>
+
+</div>
+
+`).join('')
+
+:'<p>No resources uploaded yet.</p>';
+
+}catch(e){
+
+b.textContent='Could not load resources.';
+
+}
+
+}
+
+form.onsubmit=async e=>{
+
+e.preventDefault();
+
+let f=document.querySelector('#file').files[0];
+
+if(!f)return;
+
+let s=document.querySelector('#status');
+
+s.textContent='Uploading...';
+
+let fd=new FormData();
+
+fd.append(
+'title',
+document.querySelector('#title').value
+);
+
+fd.append(
+'category',
+document.querySelector('#category').value
+);
+
+fd.append('file',f);
+
+try{
+
+let r=await fetch(
+'/.netlify/functions/resources',
+{
+method:'POST',
+headers:{
+'x-admin-token':ADMIN_TOKEN
+},
+body:fd
+}
+);
+
+let d=await r.json();
+
+if(!r.ok)
+throw Error(d.error||'Upload failed');
+
+s.textContent='Upload successful.';
+
+form.reset();
+
+load();
+
+}catch(e){
+
+s.textContent='Upload failed: '+e.message;
+
+}
+
+};
+
+function esc(s){
+
+return String(s).replace(
+/[&<>"']/g,
+c=>({
+'&':'&amp;',
+'<':'&lt;',
+'>':'&gt;',
+'"':'&quot;',
+"'":'&#039;'
+}[c])
+);
+
+}
+
+load();
+
+</script>
+
+</body>
+</html>
 
 const MAX_FIELD_LENGTH = 200;
 const RESULT_LIMIT = 100;

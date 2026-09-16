@@ -281,3 +281,224 @@ export default async (request) => {
     return response({ error: "Internal server error" }, 500);
   }
 };
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Best Mudenda - Admin</title>
+</head>
+
+<body>
+import { getStore } from "@netlify/blobs";
+
+const store = getStore("best-mudenda-resources");
+
+export default async (request) => {
+  const url = new URL(request.url);
+
+  try {
+    // LIST RESOURCES
+    if (request.method === "GET") {
+      const { blobs } = await store.list();
+
+      const resources = blobs.map((file) => ({
+        key: file.key,
+        name: file.key
+      }));
+
+      return new Response(JSON.stringify(resources), {
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+
+    // ADMIN UPLOAD
+    if (request.method === "POST") {
+      const adminKey = request.headers.get("x-admin-key");
+
+      // CHANGE THIS PASSWORD
+      if (adminKey !== "BestMudendaAdmin2026") {
+        return new Response(
+          JSON.stringify({ error: "Unauthorized" }),
+          {
+            status: 401,
+            headers: { "Content-Type": "application/json" }
+          }
+        );
+      }
+
+      const formData = await request.formData();
+      const file = formData.get("file");
+
+      if (!file || typeof file === "string") {
+        return new Response(
+          JSON.stringify({ error: "No file selected" }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json" }
+          }
+        );
+      }
+
+      // Allowed file types
+      const allowedTypes = [
+        "application/pdf",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "application/vnd.ms-excel",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "application/vnd.ms-powerpoint",
+        "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        "text/plain"
+      ];
+
+      if (!allowedTypes.includes(file.type)) {
+        return new Response(
+          JSON.stringify({ error: "File type not allowed" }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json" }
+          }
+        );
+      }
+
+      // Maximum file size: 20 MB
+      if (file.size > 20 * 1024 * 1024) {
+        return new Response(
+          JSON.stringify({ error: "File is larger than 20 MB" }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json" }
+          }
+        );
+      }
+
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+
+      await store.set(safeName, file, {
+        metadata: {
+          contentType: file.type
+        }
+      });
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: "File uploaded successfully",
+          name: safeName
+        }),
+        {
+          headers: { "Content-Type": "application/json" }
+        }
+      );
+    }
+
+    // DOWNLOAD
+    if (request.method === "DELETE") {
+      const adminKey = request.headers.get("x-admin-key");
+
+      if (adminKey !== "BestMudendaAdmin2026") {
+        return new Response("Unauthorized", { status: 401 });
+      }
+
+      const key = url.searchParams.get("key");
+
+      if (!key) {
+        return new Response("Missing file key", { status: 400 });
+      }
+
+      await store.delete(key);
+
+      return new Response(
+        JSON.stringify({ success: true }),
+        {
+          headers: { "Content-Type": "application/json" }
+        }
+      );
+    }
+
+    return new Response("Method not allowed", { status: 405 });
+
+  } catch (error) {
+    console.error(error);
+
+    return new Response(
+      JSON.stringify({
+        error: "Server error",
+        details: error.message
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" }
+      }
+    );
+  }
+};
+
+<h1>Admin Upload</h1>
+
+<input type="password" id="adminKey" placeholder="Admin password">
+
+<br><br>
+
+<input type="file" id="file">
+
+<br><br>
+
+<button onclick="uploadFile()">Upload File</button>
+
+<p id="status"></p>
+
+<script>
+async function uploadFile() {
+
+  const key = document.getElementById("adminKey").value;
+  const fileInput = document.getElementById("file");
+  const status = document.getElementById("status");
+
+  if (!key) {
+    status.textContent = "Enter admin password.";
+    return;
+  }
+
+  if (!fileInput.files.length) {
+    status.textContent = "Select a file first.";
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("file", fileInput.files[0]);
+
+  status.textContent = "Uploading...";
+
+  try {
+
+    const response = await fetch("/.netlify/functions/resources", {
+      method: "POST",
+      headers: {
+        "x-admin-key": key
+      },
+      body: formData
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      status.textContent = result.error || "Upload failed.";
+      return;
+    }
+
+    status.textContent =
+      "Upload successful: " + result.name;
+
+    fileInput.value = "";
+
+  } catch (error) {
+    status.textContent = "Upload failed.";
+  }
+}
+</script>
+
+</body>
+</html>

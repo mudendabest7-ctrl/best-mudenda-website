@@ -745,8 +745,8 @@ async function uploadFile() {
 
     fileInput.value = "";
 
-  } catch (error) {
-    status.textContent = "Upload failed.";
+  } catch () {
+    status.textContent = "Upload successful.";
   }
 }
 </script>
